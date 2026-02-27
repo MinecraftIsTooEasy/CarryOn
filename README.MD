@@ -7,4 +7,5 @@
 ## Usage: 
 
 
-## Credits: This mod is ported from https://github.com/Tschipp/CarryOn.
+## Credits
+This mod is a port of [CarryOn](https://github.com/Tschipp/CarryOn) by Tschipp. Thanks to Tschipp for the original work.
