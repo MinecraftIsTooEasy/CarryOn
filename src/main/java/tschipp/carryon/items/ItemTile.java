@@ -94,7 +94,7 @@ public class ItemTile extends Item {
                 living.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, 1, potionLevel(stack), false));
             }
         }
-        else if (isSelected)
+        else if (isSelected && !world.isRemote)
         {
             stack.stackSize = 0;
         }

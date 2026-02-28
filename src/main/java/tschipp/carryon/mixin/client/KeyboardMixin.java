@@ -1,7 +1,6 @@
 package tschipp.carryon.mixin.client;
 
 import net.minecraft.*;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -52,17 +51,32 @@ public abstract class KeyboardMixin {
         }
     }
 
-    /**
-     * Redirects inventory.currentItem = var12 — the number-key path.
-     * When carrying, we write back the current slot unchanged.
-     */
-    @Redirect(method = "runTick", at = @At(value = "FIELD", target = "net/minecraft/InventoryPlayer.currentItem:I", opcode = Opcodes.PUTFIELD))
-    private void redirectNumberKeyHotbar(InventoryPlayer inventory, int newSlot)
+    /** Saved hotbar slot captured at the start of each tick. Only valid when {@code carryon_wasCarrying} is true. */
+    @Unique private int carryon_savedSlot    = 0;
+    /** Whether the player was already carrying at the start of this tick. */
+    @Unique private boolean carryon_wasCarrying = false;
+
+    /** Capture the current hotbar slot at the very start of runTick. */
+    @Inject(method = "runTick", at = @At("HEAD"))
+    private void carryon_captureSlot(CallbackInfo ci)
     {
-        if (!carryon_isCarrying())
-        {
-            inventory.currentItem = newSlot;
-        }
+        carryon_wasCarrying = carryon_isCarrying();
+
+        if (carryon_wasCarrying && thePlayer != null)
+            carryon_savedSlot = thePlayer.inventory.currentItem;
+    }
+
+    /**
+     * Restore the hotbar slot at the end of runTick — only if the player was
+     * already carrying at the start of this tick. This prevents slot changes
+     * made by number keys or scroll wheel from taking effect while carrying,
+     * without interfering with the pickup tick itself.
+     */
+    @Inject(method = "runTick", at = @At("TAIL"))
+    private void carryon_restoreSlot(CallbackInfo ci)
+    {
+        if (carryon_wasCarrying && thePlayer != null)
+            thePlayer.inventory.currentItem = carryon_savedSlot;
     }
 
     /**
