@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tschipp.carryon.CarryOnEvents;
 
-@Mixin(Minecraft.class)
+@Mixin(value = Minecraft.class, priority = 10001)
 public abstract class KeyboardMixin {
 
     @Shadow public EntityClientPlayerMP thePlayer;
