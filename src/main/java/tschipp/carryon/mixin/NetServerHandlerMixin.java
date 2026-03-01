@@ -25,6 +25,36 @@ public class NetServerHandlerMixin {
 
     @Unique private static final long COOLDOWN_MS = 500L;
 
+    @Inject(method = "handleWindowClick", at = @At("HEAD"), cancellable = true)
+    private void carryon$lockSlotOnWindowClick(Packet102WindowClick packet, CallbackInfo ci)
+    {
+        ServerPlayer player = this.playerEntity;
+        if (player == null) return;
+
+        ItemStack held = player.getHeldItemStack();
+        if (held == null) return;
+
+        Item item = held.getItem();
+        if (item != CarryOnEvents.TILE_ITEM && item != CarryOnEvents.ENTITY_ITEM) return;
+
+        ci.cancel();
+    }
+
+    @Inject(method = "handleBlockItemSwitch", at = @At("HEAD"), cancellable = true)
+    private void carryon$lockSlotOnHotbarSwitch(Packet16BlockItemSwitch packet, CallbackInfo ci)
+    {
+        ServerPlayer player = this.playerEntity;
+        if (player == null) return;
+
+        ItemStack held = player.getHeldItemStack();
+        if (held == null) return;
+
+        Item item = held.getItem();
+        if (item != CarryOnEvents.TILE_ITEM && item != CarryOnEvents.ENTITY_ITEM) return;
+
+        ci.cancel();
+    }
+
     @Inject(method = "handleRightClick", at = @At("HEAD"), cancellable = true)
     private void carryon$handleRightClick(Packet81RightClick packet, CallbackInfo ci)
     {

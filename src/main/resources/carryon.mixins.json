@@ -5,18 +5,19 @@
   "target": "DEFAULT",
   "minVersion": "0.8.3",
   "client": [
-    "client.PlayerRendererMixin",
     "client.ArmorRendererMixin",
     "client.BipedModelMixin",
     "client.FirstPersonMixin",
+    "client.ItemIconOverrideMixin",
     "client.KeyboardMixin",
-    "client.ItemIconOverrideMixin"
+    "client.PlayerRendererMixin"
   ],
   "mixins": [
     "BlockMixin",
     "EntityMixin",
     "EntityPlayerMixin",
-    "NetServerHandlerMixin"
+    "NetServerHandlerMixin",
+    "SlotMixin"
   ],
   "injectors": {
     "defaultRequire": 1
