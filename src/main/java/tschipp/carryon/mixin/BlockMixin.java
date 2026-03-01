@@ -27,6 +27,16 @@ public class BlockMixin {
 
         if (player.isSneaking() && held == null && PickupHandler.isFunctionalBlock((Block)(Object) this))
         {
+            // Anti-fly: combined check — distance limit + no pickup while standing on functional block.
+            // Use ceil so shift-sneaking on a block edge (posY=64.6) counts as level 65.
+            int footY = MathHelper.ceiling_double_int(player.posY);
+            if (y < footY - 1) return;
+
+            int underX = MathHelper.floor_double(player.posX);
+            int underZ = MathHelper.floor_double(player.posZ);
+            Block underBlock = Block.blocksList[world.getBlockId(underX, footY - 1, underZ)];
+            if (underBlock != null && PickupHandler.isFunctionalBlock(underBlock)) return;
+
             info.setReturnValue(false);
             info.cancel();
         }

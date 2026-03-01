@@ -124,6 +124,22 @@ public class NetServerHandlerMixin {
 
             if (block.getBlockHardness(world.getBlockMetadata(x, y, z)) < 0) return;
 
+            // Anti-fly: two combined checks.
+            // 1. Target block must be within 1 block below the player's feet.
+            // 2. The block directly under the player's feet must NOT be a functional block.
+            //    (Prevents picking up while jumping off a functional block to carry it upward.)
+            {
+                // Use ceil so that edge-clinging (posY=64.6) counts as being at level 65,
+                // closing the 1% gap where shift-sneaking on a block edge bypassed floor().
+                int footY = MathHelper.ceiling_double_int(player.posY);
+                if (y < footY - 1) return;
+
+                int underX = MathHelper.floor_double(player.posX);
+                int underZ = MathHelper.floor_double(player.posZ);
+                Block underBlock = Block.blocksList[world.getBlockId(underX, footY - 1, underZ)];
+                if (underBlock != null && PickupHandler.isFunctionalBlock(underBlock)) return;
+            }
+
             if (ItemTile.isLocked(x, y, z, world)) return;
 
             if (!checkCooldown(player.entityId)) {
