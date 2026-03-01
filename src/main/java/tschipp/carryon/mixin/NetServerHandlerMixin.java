@@ -60,7 +60,7 @@ public class NetServerHandlerMixin {
     {
         ServerPlayer player = this.playerEntity;
 
-        if (player == null || !player.isSneaking() || player.hasHeldItem()) return;
+        if (player == null) return;
 
         World world = player.worldObj;
 
@@ -68,11 +68,23 @@ public class NetServerHandlerMixin {
 
         ItemStack held = player.getHeldItemStack();
 
+        // While carrying, only allow the item's own right-click (which places the carried
+        // block/entity back into the world). Block activation, entity interaction, ingestion
+        // and all other right-click actions are cancelled.
         if (held != null && (held.getItem() == CarryOnEvents.TILE_ITEM || held.getItem() == CarryOnEvents.ENTITY_ITEM))
         {
+            RightClickFilter filter = packet.filter;
+
+            // allowsOnItemRightClick → this is the placement path, let it through
+            if (filter != null && filter.allowsOnItemRightClick()) return;
+
+            // Everything else (block activation, entity interaction, ingestion, …) → cancel
             ci.cancel();
             return;
         }
+
+        // ---- pickup logic (sneaking, empty hand) ----
+        if (!player.isSneaking() || player.hasHeldItem()) return;
 
         // Entity-only packet — animal/villager right-click
         if (packet.filter.allowsEntityInteractionOnly())
