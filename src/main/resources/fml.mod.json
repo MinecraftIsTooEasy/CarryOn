@@ -21,6 +21,7 @@
     ]
   },
   "mixins": [
-    "carryon.mixins.json"
+    "carryon.mixins.json",
+    "carryon-offhand.mixins.json"
   ]
 }

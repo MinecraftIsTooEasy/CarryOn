@@ -31,6 +31,8 @@ dependencies {
     implementation "com.github.MinecraftIsTooEasy:Gson:2.10.1"
     implementation "com.github.MinecraftIsTooEasy:ManyLib:2.3.0"
     implementation "com.github.MinecraftIsTooEasy:ModMenu:10.1.1"
+
+    compileOnly "com.github.MinecraftIsTooEasy:OffHand:3.0.1"
 }
 
 def fmlResolvedFile = configurations.fml.files.iterator().next()
