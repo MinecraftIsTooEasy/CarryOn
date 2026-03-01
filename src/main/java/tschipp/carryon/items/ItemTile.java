@@ -55,7 +55,36 @@ public class ItemTile extends Item {
 
         if (!player.canPlayerEdit(placeX, placeY, placeZ, stack)) return false;
 
-        world.setBlock(placeX, placeY, placeZ, containedBlock.blockID, containedMeta, 3);
+        AxisAlignedBB playerBB = player.boundingBox;
+        AxisAlignedBB placeBB  = AxisAlignedBB.getAABBPool().getAABB(placeX, placeY, placeZ, placeX + 1, placeY + 1, placeZ + 1);
+
+        if (playerBB.intersectsWith(placeBB)) return false;
+
+        // ── Hopper direction: shift+place connects the hopper output toward the clicked block ──
+        int finalMeta = containedMeta;
+
+        if (containedBlock instanceof BlockHopper && player.isSneaking())
+        {
+            // Derive the EnumFace of the clicked block's face that was hit.
+            // (place - hit) gives the direction from hit block toward place position,
+            // which is the outward-facing normal of the clicked face.
+            int fdx = placeX - x;
+            int fdy = placeY - y;
+            int fdz = placeZ - z;
+
+            EnumFace clickedFace;
+            if      (fdy ==  1) clickedFace = EnumFace.TOP;
+            else if (fdy == -1) clickedFace = EnumFace.BOTTOM;
+            else if (fdz ==  1) clickedFace = EnumFace.SOUTH;
+            else if (fdz == -1) clickedFace = EnumFace.NORTH;
+            else if (fdx ==  1) clickedFace = EnumFace.EAST;
+            else                clickedFace = EnumFace.WEST;
+
+            // Delegate entirely to BlockHopper's own placement logic.
+            finalMeta = containedBlock.getMetadataForPlacement(world, placeX, placeY, placeZ, null, player, clickedFace, 0.5f, 0.5f, 0.5f);
+        }
+
+        world.setBlock(placeX, placeY, placeZ, containedBlock.blockID, finalMeta, 3);
 
         StepSound stepSound = containedBlock.stepSound;
 

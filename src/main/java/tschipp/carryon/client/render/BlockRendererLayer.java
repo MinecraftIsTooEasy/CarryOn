@@ -123,10 +123,13 @@ public class BlockRendererLayer {
 
     public static boolean isChest(Block block)
     {
-        return block == Block.chest        || block == Block.enderChest     || block == Block.chestTrapped
-            || block == Block.chestCopper  || block == Block.chestSilver    || block == Block.chestGold
-            || block == Block.chestIron    || block == Block.chestMithril   || block == Block.chestAdamantium
-            || block == Block.chestAncientMetal;
+        if (block instanceof BlockChest)    return true;
+
+        if (block instanceof BlockEnderChest) return true;
+
+        if (block instanceof BlockStrongbox) return true;
+
+        return false;
     }
 
 
