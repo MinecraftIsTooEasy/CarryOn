@@ -79,13 +79,18 @@ public class NetServerHandlerMixin {
         // ---- pickup logic (sneaking, empty hand) ----
         if (!player.isSneaking() || player.hasHeldItem()) return;
 
+        // Record which hotbar slot is currently empty — the carry item must always
+        // land here, and the client must be forced back to this slot after pickup.
+        // This prevents a scroll-wheel packet arriving after pickup from silently
+        // moving focus away from the carry item.
+        final int carrySlot = player.inventory.currentItem;
+
         // Entity-only packet — animal/villager right-click
         if (packet.filter.allowsEntityInteractionOnly())
         {
             Entity entity = world.getEntityByID(packet.entity_id);
 
             if (entity != null && !entity.isDead && PickupHandler.canPlayerPickUpEntity(player, entity)
-
                     && checkCooldown(player.entityId))
             {
                 ItemStack stack = new ItemStack(CarryOnEvents.ENTITY_ITEM);
@@ -93,7 +98,7 @@ public class NetServerHandlerMixin {
                 if (ItemEntity.storeEntityData(entity, world, stack))
                 {
                     entity.setDead();
-                    player.setHeldItemStack(stack);
+                    forceCarrySlot(player, carrySlot, stack);
                     ci.cancel();
                 }
             }
@@ -145,8 +150,7 @@ public class NetServerHandlerMixin {
             {
                 world.removeBlockTileEntity(x, y, z);
                 world.setBlockToAir(x, y, z);
-
-                player.setHeldItemStack(stack);
+                forceCarrySlot(player, carrySlot, stack);
                 ci.cancel();
             }
         }
@@ -168,10 +172,21 @@ public class NetServerHandlerMixin {
             if (ItemEntity.storeEntityData(entity, world, stack))
             {
                 entity.setDead();
-                player.setHeldItemStack(stack);
+                forceCarrySlot(player, carrySlot, stack);
                 ci.cancel();
             }
         }
+    }
+
+    @Unique
+    private static void forceCarrySlot(ServerPlayer player, int slot, ItemStack stack)
+    {
+        player.inventory.mainInventory[slot] = stack;
+        player.inventory.currentItem = slot;
+        // Tell the client to select this slot.
+        player.sendPacket(new Packet16BlockItemSwitch(slot));
+        // Sync the full inventory so the client sees the item in the correct slot.
+        player.sendContainerToPlayer(player.inventoryContainer);
     }
 
     /** Returns true and records timestamp if outside cooldown window; false if still cooling down. */
