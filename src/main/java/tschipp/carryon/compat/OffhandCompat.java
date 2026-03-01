@@ -1,7 +1,13 @@
 package tschipp.carryon.compat;
 
+import com.m.offhand.api.compat.IOffhandActionFilter;
+import com.m.offhand.api.compat.OffhandCompatRegistry;
+
+import net.minecraft.EntityPlayer;
 import net.minecraft.ItemStack;
+
 import net.xiaoyu233.fml.FishModLoader;
+
 import tschipp.carryon.CarryOnEvents;
 import tschipp.carryon.items.ItemEntity;
 import tschipp.carryon.items.ItemTile;
@@ -29,18 +35,32 @@ public class OffhandCompat {
     private static final class Impl {
 
         static void apply() {
-            com.m.offhand.api.compat.OffhandCompatRegistry.setInteractionPolicy(
-                new com.m.offhand.api.compat.IOffhandInteractionPolicy() {
-                    @Override
-                    public boolean canUseOffhandForBlockInteraction(
-                            net.minecraft.EntityPlayer player,
-                            net.minecraft.ItemStack mainHand,
-                            net.minecraft.ItemStack offHand,
-                            net.minecraft.RaycastCollision target) {
-                        if (isCarrying(mainHand) || isCarrying(offHand)) return false;
-                        return true;
+            OffhandCompatRegistry.setActionFilter(
+                    new IOffhandActionFilter() {
+                        @Override
+                        public boolean cancelOffhandRightClick(
+                                EntityPlayer player,
+                                ItemStack mainhand,
+                                ItemStack offhand) {
+                            return isCarrying(mainhand);
+                        }
+
+                        @Override
+                        public boolean cancelOffhandSwapKey(
+                                EntityPlayer player,
+                                ItemStack mainhand,
+                                ItemStack offhand) {
+                            return isCarrying(mainhand);
+                        }
+
+                        @Override
+                        public boolean cancelOffhandSwapPacket(
+                                EntityPlayer player,
+                                ItemStack mainhand,
+                                ItemStack offhand) {
+                            return isCarrying(mainhand);
+                        }
                     }
-                }
             );
         }
     }
