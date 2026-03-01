@@ -4,7 +4,7 @@ import net.minecraft.*;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import tschipp.carryon.CarryOnEvents;
-import tschipp.carryon.items.ItemTile;
+import tschipp.carryon.item.ItemTile;
 
 public class BlockRendererLayer {
 

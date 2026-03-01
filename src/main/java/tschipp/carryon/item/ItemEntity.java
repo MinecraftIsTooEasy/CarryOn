@@ -1,4 +1,4 @@
-package tschipp.carryon.items;
+package tschipp.carryon.item;
 
 import net.minecraft.*;
 import tschipp.carryon.CarryOnData;
@@ -11,6 +11,11 @@ public class ItemEntity extends Item {
         super(id, "carryon:carryon_entity", 1);
         this.setMaxStackSize(1);
         this.setUnlocalizedName("carryon.entity_item");
+    }
+
+    @Override
+    public boolean isHarmedByAcid() {
+        return false;
     }
 
     @Override
@@ -40,6 +45,14 @@ public class ItemEntity extends Item {
         {
             placeX = x; placeY = y; placeZ = z;
         }
+
+        // Pre-check on both sides: target space must be clear of solid blocks.
+        if (world.getBlockId(placeX, placeY, placeZ) != 0)
+        {
+            Block there = Block.blocksList[world.getBlockId(placeX, placeY, placeZ)];
+            if (there == null || !there.isAlwaysReplaceable()) return false;
+        }
+
 
         if (!world.isRemote)
         {

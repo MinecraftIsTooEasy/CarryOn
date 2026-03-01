@@ -10,9 +10,11 @@
     "client.FirstPersonMixin",
     "client.ItemIconOverrideMixin",
     "client.KeyboardMixin",
+    "client.PlayerControllerMixin",
     "client.PlayerRendererMixin"
   ],
   "mixins": [
+    "BlockDigPacketMixin",
     "BlockMixin",
     "EntityMixin",
     "EntityPlayerMixin",

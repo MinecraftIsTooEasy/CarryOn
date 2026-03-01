@@ -1,6 +1,9 @@
 package tschipp.carryon.mixin.client;
 
 import net.minecraft.*;
+
+import tschipp.carryon.CarryOnHelper;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -8,35 +11,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tschipp.carryon.CarryOnEvents;
 
 @Mixin(value = Minecraft.class, priority = 10001)
 public abstract class KeyboardMixin {
 
     @Shadow public EntityClientPlayerMP thePlayer;
-
-    /** Checks whether the player is currently holding a CarryOn carry item. */
-    @Unique
-    private boolean carryon_isCarrying()
-    {
-        if (thePlayer == null) return false;
-
-        ItemStack held = thePlayer.getHeldItemStack();
-
-        return held != null && (held.getItem() == CarryOnEvents.TILE_ITEM || held.getItem() == CarryOnEvents.ENTITY_ITEM);
-    }
-
-    /**
-     * Cancels inventory opening if the player is carrying something.
-     */
-    @Inject(method = "runTick", at = @At(value = "NEW", target = "net/minecraft/GuiInventory"), cancellable = true)
-    private void cancelInventoryIfCarrying(CallbackInfo ci)
-    {
-        if (carryon_isCarrying())
-        {
-            ci.cancel();
-        }
-    }
 
     /**
      * Redirects inventory.changeCurrentItem(dwheel) — the scroll wheel path.
@@ -45,14 +24,12 @@ public abstract class KeyboardMixin {
     @Redirect(method = "runTick", at = @At(value = "INVOKE", target = "net/minecraft/InventoryPlayer.changeCurrentItem(I)V"))
     private void redirectScrollHotbar(InventoryPlayer inventory, int direction)
     {
-        if (!carryon_isCarrying())
-        {
+        if (!CarryOnHelper.isCarrying(thePlayer))
             inventory.changeCurrentItem(direction);
-        }
     }
 
     /** Saved hotbar slot captured at the start of each tick. Only valid when {@code carryon_wasCarrying} is true. */
-    @Unique private int carryon_savedSlot    = 0;
+    @Unique private int carryon_savedSlot = 0;
     /** Whether the player was already carrying at the start of this tick. */
     @Unique private boolean carryon_wasCarrying = false;
 
@@ -60,7 +37,7 @@ public abstract class KeyboardMixin {
     @Inject(method = "runTick", at = @At("HEAD"))
     private void carryon_captureSlot(CallbackInfo ci)
     {
-        carryon_wasCarrying = carryon_isCarrying();
+        carryon_wasCarrying = CarryOnHelper.isCarrying(thePlayer);
 
         if (carryon_wasCarrying && thePlayer != null)
             carryon_savedSlot = thePlayer.inventory.currentItem;
@@ -79,18 +56,19 @@ public abstract class KeyboardMixin {
             thePlayer.inventory.currentItem = carryon_savedSlot;
     }
 
-    /**
-     * Bottom-level drop key suppression: intercept KeyBinding.onTick(keyCode) in the
-     * keyboard event loop. When carrying, skip the call for keyBindDrop so pressTime
-     * never increments — the key is completely inert regardless of how fast it is pressed.
-     */
+    /** Zero out drop, attack, and inventory key press-time while carrying. */
     @Redirect(method = "runTick", at = @At(value = "INVOKE", target = "net/minecraft/KeyBinding.onTick(I)V"))
     private void redirectOnTick(int keyCode)
     {
-        if (carryon_isCarrying())
+        if (CarryOnHelper.isCarrying(thePlayer))
         {
             GameSettings settings = ((Minecraft) (Object) this).gameSettings;
+
             if (settings != null && keyCode == settings.keyBindDrop.keyCode) return;
+
+            if (settings != null && keyCode == settings.keyBindAttack.keyCode) return;
+
+            if (settings != null && keyCode == settings.keyBindInventory.keyCode) return;
         }
 
         KeyBinding.onTick(keyCode);

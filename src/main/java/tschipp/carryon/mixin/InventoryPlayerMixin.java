@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tschipp.carryon.CarryOnEvents;
-import tschipp.carryon.items.ItemEntity;
-import tschipp.carryon.items.ItemTile;
+import tschipp.carryon.item.ItemEntity;
+import tschipp.carryon.item.ItemTile;
 
 /**
  * Intercepts {@link InventoryPlayer#dropAllItems()} — the method called by

@@ -3,7 +3,7 @@ package tschipp.carryon.client.render;
 import net.minecraft.*;
 import org.lwjgl.opengl.GL11;
 import tschipp.carryon.CarryOnEvents;
-import tschipp.carryon.items.ItemEntity;
+import tschipp.carryon.item.ItemEntity;
 
 public class EntityRendererLayer {
 

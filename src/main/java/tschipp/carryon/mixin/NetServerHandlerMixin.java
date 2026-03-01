@@ -8,9 +8,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tschipp.carryon.CarryOnEvents;
+import tschipp.carryon.CarryOnHelper;
 import tschipp.carryon.PickupHandler;
-import tschipp.carryon.items.ItemEntity;
-import tschipp.carryon.items.ItemTile;
+import tschipp.carryon.item.ItemEntity;
+import tschipp.carryon.item.ItemTile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,11 +32,7 @@ public class NetServerHandlerMixin {
         ServerPlayer player = this.playerEntity;
         if (player == null) return;
 
-        ItemStack held = player.getHeldItemStack();
-        if (held == null) return;
-
-        Item item = held.getItem();
-        if (item != CarryOnEvents.TILE_ITEM && item != CarryOnEvents.ENTITY_ITEM) return;
+        if (!CarryOnHelper.isCarryStack(player.getHeldItemStack())) return;
 
         ci.cancel();
     }
@@ -44,14 +41,10 @@ public class NetServerHandlerMixin {
     private void carryon$lockSlotOnHotbarSwitch(Packet16BlockItemSwitch packet, CallbackInfo ci)
     {
         ServerPlayer player = this.playerEntity;
+
         if (player == null) return;
 
-        ItemStack held = player.getHeldItemStack();
-        if (held == null) return;
-
-        Item item = held.getItem();
-        if (item != CarryOnEvents.TILE_ITEM && item != CarryOnEvents.ENTITY_ITEM) return;
-
+        if (!CarryOnHelper.isCarryStack(player.getHeldItemStack())) return;
         ci.cancel();
     }
 
@@ -71,7 +64,7 @@ public class NetServerHandlerMixin {
         // While carrying, only allow the item's own right-click (which places the carried
         // block/entity back into the world). Block activation, entity interaction, ingestion
         // and all other right-click actions are cancelled.
-        if (held != null && (held.getItem() == CarryOnEvents.TILE_ITEM || held.getItem() == CarryOnEvents.ENTITY_ITEM))
+        if (CarryOnHelper.isCarryStack(held))
         {
             RightClickFilter filter = packet.filter;
 

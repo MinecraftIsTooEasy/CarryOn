@@ -1,4 +1,4 @@
-package tschipp.carryon.items;
+package tschipp.carryon.item;
 
 import net.minecraft.*;
 import tschipp.carryon.CarryOnData;
@@ -11,6 +11,11 @@ public class ItemTile extends Item {
         super(id, "carryon:carryon_tile", 1);
         this.setMaxStackSize(1);
         this.setUnlocalizedName("carryon.tile_item");
+    }
+
+    @Override
+    public boolean isHarmedByAcid() {
+        return false;
     }
 
     @Override
@@ -85,6 +90,22 @@ public class ItemTile extends Item {
         }
 
         world.setBlock(placeX, placeY, placeZ, containedBlock.blockID, finalMeta, 3);
+
+        // Verify the block was actually placed.
+        if (world.getBlockId(placeX, placeY, placeZ) != containedBlock.blockID)
+        {
+            if (world.isRemote)
+            {
+                // Roll back the client's optimistic placement.
+                world.setBlockToAir(placeX, placeY, placeZ);
+            }
+            else
+            {
+                player.sendPacket(new Packet53BlockChange(placeX, placeY, placeZ, world));
+                ((ServerPlayer) player).sendContainerToPlayer(player.inventoryContainer);
+            }
+            return false;
+        }
 
         StepSound stepSound = containedBlock.stepSound;
 

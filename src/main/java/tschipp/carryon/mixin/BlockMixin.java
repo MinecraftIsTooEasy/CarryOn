@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import tschipp.carryon.CarryOnEvents;
+import tschipp.carryon.CarryOnHelper;
 import tschipp.carryon.PickupHandler;
 
 @Mixin(Block.class)
@@ -18,7 +18,7 @@ public class BlockMixin {
 
         ItemStack held = player.getHeldItemStack();
 
-        if (held != null && (held.getItem() == CarryOnEvents.TILE_ITEM || held.getItem() == CarryOnEvents.ENTITY_ITEM))
+        if (CarryOnHelper.isCarryStack(held))
         {
             info.setReturnValue(false);
             info.cancel();

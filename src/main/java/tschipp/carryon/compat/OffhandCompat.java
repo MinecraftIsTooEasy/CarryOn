@@ -9,8 +9,8 @@ import net.minecraft.ItemStack;
 import net.xiaoyu233.fml.FishModLoader;
 
 import tschipp.carryon.CarryOnEvents;
-import tschipp.carryon.items.ItemEntity;
-import tschipp.carryon.items.ItemTile;
+import tschipp.carryon.item.ItemEntity;
+import tschipp.carryon.item.ItemTile;
 
 public class OffhandCompat {
 
