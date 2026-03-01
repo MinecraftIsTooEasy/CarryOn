@@ -16,6 +16,7 @@
     "BlockMixin",
     "EntityMixin",
     "EntityPlayerMixin",
+    "InventoryPlayerMixin",
     "NetServerHandlerMixin",
     "SlotMixin"
   ],

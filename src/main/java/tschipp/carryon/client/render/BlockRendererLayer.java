@@ -8,6 +8,9 @@ import tschipp.carryon.items.ItemTile;
 
 public class BlockRendererLayer {
 
+    /** Render-type value returned by BlockBrewingStand.getRenderType() */
+    private static final int RENDER_TYPE_BREWING_STAND = 25;
+
     public static void renderThirdPerson(AbstractClientPlayer player, float partialTicks)
     {
         ItemStack stack = player.getHeldItemStack();
@@ -49,6 +52,10 @@ public class BlockRendererLayer {
         {
             GL11.glRotated(180, 0, 1, 0);
             renderChestWithMeta(block, meta, 1.0f);
+        }
+        else if (block.getRenderType() == RENDER_TYPE_BREWING_STAND)
+        {
+            renderBrewingStand(meta);
         }
         else
         {
@@ -98,6 +105,10 @@ public class BlockRendererLayer {
             GL11.glRotated(180, 0, 1, 0);
             renderChestWithMeta(block, meta, 1.0f);
         }
+        else if (block.getRenderType() == RENDER_TYPE_BREWING_STAND)
+        {
+            renderBrewingStand(meta);
+        }
         else
         {
             applyDirectionRotation(block, meta);
@@ -117,6 +128,167 @@ public class BlockRendererLayer {
             || block == Block.chestIron    || block == Block.chestMithril   || block == Block.chestAdamantium
             || block == Block.chestAncientMetal;
     }
+
+
+
+    /**
+     * Renders the brewing stand by delegating to the original
+     * {@code RenderBlocks.renderBlockByRenderType} path via a minimal
+     * {@link IBlockAccess} stub.  This is identical to what the chunk renderer
+     * does, so the output is pixel-perfect.
+     *
+     * @param meta block metadata stored in the carry stack (controls which
+     *             bottle slots are lit on the arms)
+     */
+    private static void renderBrewingStand(int meta)
+    {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc == null || mc.theWorld == null || mc.thePlayer == null) return;
+
+        BlockBrewingStand block = (BlockBrewingStand) Block.brewingStand;
+
+        // Pick a scratch coordinate that is:
+        //  - chunk-aligned to the player (so it's definitely loaded)
+        //  - at y=255 (top of the world, full sky light, never a real block)
+        World world = mc.theWorld;
+        int bx = ((int) mc.thePlayer.posX & ~15);
+        int by = 255;
+        int bz = ((int) mc.thePlayer.posZ & ~15);
+
+        int savedId   = world.getBlockId(bx, by, bz);
+        int savedMeta = world.getBlockMetadata(bx, by, bz);
+
+        world.setBlock(bx, by, bz, block.blockID, meta, 0);
+
+        // Wrap the world so every brightness query returns full-bright,
+        // defeating renderBlockBrewingStand's getMixedBrightnessForBlock call.
+        IBlockAccess brightWorld = new BrightBlockAccess(world);
+        RenderBlocks rb = new RenderBlocks(brightWorld);
+
+        Tessellator t = Tessellator.instance;
+        t.startDrawingQuads();
+        t.setBrightness(0xF000F0);
+        t.setTranslation(-bx - 0.5, -by, -bz - 0.5);
+
+        rb.renderBlockByRenderType(block, bx, by, bz);
+
+        t.draw();
+        t.setTranslation(0, 0, 0);
+
+        // Restore scratch position (almost certainly air already at y=255).
+        world.setBlock(bx, by, bz, savedId, savedMeta, 0);
+    }
+
+    /**
+         * Thin {@link IBlockAccess} wrapper around a real world that overrides all
+         * brightness-related queries to return full-bright values.  Every other call
+         * is forwarded directly to the delegate, so block geometry, metadata and
+         * tile-entity lookups all work exactly as normal.
+         */
+        private record BrightBlockAccess(IBlockAccess delegate) implements IBlockAccess {
+
+        @Override
+        public int getLightBrightnessForSkyBlocks(int x, int y, int z, int min) {
+            return 0xF000F0;
+        }
+
+        @Override
+        public float getLightBrightness(int x, int y, int z) {
+            return 1.0f;
+        }
+
+        @Override
+        public float getBrightness(int x, int y, int z, int face) {
+            return 1.0f;
+        }
+
+        @Override
+        public int getBlockId(int x, int y, int z) {
+            return delegate.getBlockId(x, y, z);
+        }
+
+        @Override
+        public Block getBlock(int x, int y, int z) {
+            return delegate.getBlock(x, y, z);
+        }
+
+        @Override
+        public int getBlockMetadata(int x, int y, int z) {
+            return delegate.getBlockMetadata(x, y, z);
+        }
+
+        @Override
+        public TileEntity getBlockTileEntity(int x, int y, int z) {
+            return delegate.getBlockTileEntity(x, y, z);
+        }
+
+        @Override
+        public Material getBlockMaterial(int x, int y, int z) {
+            return delegate.getBlockMaterial(x, y, z);
+        }
+
+        @Override
+        public Material getBlockMaterial(int id) {
+            return delegate.getBlockMaterial(id);
+        }
+
+        @Override
+        public boolean isAirBlock(int x, int y, int z) {
+            return delegate.isAirBlock(x, y, z);
+        }
+
+        @Override
+        public boolean isBlockStandardFormOpaqueCube(int x, int y, int z) {
+            return delegate.isBlockStandardFormOpaqueCube(x, y, z);
+        }
+
+        @Override
+        public boolean isBlockNormalCube(int x, int y, int z) {
+            return delegate.isBlockNormalCube(x, y, z);
+        }
+
+        @Override
+        public boolean isBlockTopFlatAndSolid(int x, int y, int z) {
+            return delegate.isBlockTopFlatAndSolid(x, y, z);
+        }
+
+        @Override
+        public boolean isBlockSolid(int x, int y, int z) {
+            return delegate.isBlockSolid(x, y, z);
+        }
+
+        @Override
+        public int isBlockProvidingPowerTo(int x, int y, int z, int side) {
+            return delegate.isBlockProvidingPowerTo(x, y, z, side);
+        }
+
+        @Override
+        public BiomeGenBase getBiomeGenForCoords(int x, int z) {
+            return delegate.getBiomeGenForCoords(x, z);
+        }
+
+        @Override
+        public int getHeight() {
+            return delegate.getHeight();
+        }
+
+        @Override
+        public boolean extendedLevelsInChunkCache() {
+            return delegate.extendedLevelsInChunkCache();
+        }
+
+        @Override
+        public Vec3Pool getWorldVec3Pool() {
+            return delegate.getWorldVec3Pool();
+        }
+
+        @Override
+        public World getWorld() {
+            return delegate.getWorld();
+        }
+        }
+
+
 
     private static void renderChestWithMeta(Block block, int meta, float brightness)
     {
