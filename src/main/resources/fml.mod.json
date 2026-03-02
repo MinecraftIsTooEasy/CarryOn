@@ -22,5 +22,6 @@
   },
   "mixins": [
     "carryon.mixins.json"
-  ]
+  ],
+  "accessWidener": "carryon.accesswidener"
 }
