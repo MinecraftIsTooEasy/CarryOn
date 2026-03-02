@@ -75,6 +75,7 @@ public class ItemEntity extends Item {
         }
         else
         {
+            clearEntityData(stack);
             return true;
         }
 
@@ -178,3 +179,4 @@ public class ItemEntity extends Item {
         return Math.max(1, Math.min(4, data.toString().length() / 500 + 1));
     }
 }
+
