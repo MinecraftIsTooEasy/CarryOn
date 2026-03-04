@@ -6,9 +6,18 @@ import net.minecraft.EntityPlayer;
 
 /**
  * Implement this interface and register it via
- * {@link CarryOnPluginLoader#register(CarryOnPlugin)} (called from your mod's
- * {@code onInitialize}) to tell CarryOn which extra blocks / entities your mod
- * wants to make carry-able.
+ * {@link CarryOnPluginLoader#register(CarryOnPlugin)} to tell CarryOn which
+ * extra blocks / entities your mod wants to allow or explicitly deny.
+ *
+ * <h3>Three-valued semantics</h3>
+ * <ul>
+ *   <li>{@code Boolean.TRUE}  — explicitly allow (overrides the whitelist default)</li>
+ *   <li>{@code Boolean.FALSE} — explicitly deny  (highest priority, overrides all allows)</li>
+ *   <li>{@code null}          — abstain; let other plugins or built-in rules decide</li>
+ * </ul>
+ *
+ * <p>The default implementations return {@code null} (abstain), so existing
+ * plugins that only override one method are unaffected.</p>
  *
  * <h3>Usage</h3>
  * <pre>{@code
@@ -16,9 +25,11 @@ import net.minecraft.EntityPlayer;
  * //   "carryon": [ "com.example.MyCarryOnPlugin" ]
  *
  * public class MyCarryOnPlugin implements CarryOnPlugin {
- *     \@Override
- *     public boolean canCarryBlock(EntityPlayer player, Block block, int meta) {
- *         return block instanceof MyCustomWorkbench;
+ *     @Override
+ *     public Boolean canCarryBlock(EntityPlayer player, Block block, int meta) {
+ *         if (block instanceof MySpecialBlock) return Boolean.TRUE;   // allow
+ *         if (block instanceof MyLockedBlock)  return Boolean.FALSE;  // deny
+ *         return null; // abstain
  *     }
  * }
  * }</pre>
@@ -26,30 +37,25 @@ import net.minecraft.EntityPlayer;
 public interface CarryOnPlugin {
 
     /**
-     * Return {@code true} to allow the player to carry {@code block} with the
-     * given {@code meta}.  Return {@code false} to deny, or {@code null} /
-     * leave the default (which returns {@code false}) to abstain so that other
-     * plugins or the built-in rules can decide.
+     * Called to determine whether the player may carry {@code block}.
      *
      * @param player the player attempting the carry
      * @param block  the block being targeted
-     * @param meta   the block metadata at that position
-     * @return {@code true} = allow, {@code false} = abstain (not deny)
+     * @param meta   block metadata at that position
+     * @return {@code TRUE} to allow, {@code FALSE} to deny, {@code null} to abstain
      */
-    default boolean canCarryBlock(EntityPlayer player, Block block, int meta) {
-        return false;
+    default Boolean canCarryBlock(EntityPlayer player, Block block, int meta) {
+        return null;
     }
 
     /**
-     * Return {@code true} to allow the player to carry {@code entity}.
-     * Return {@code false} to abstain so that other plugins or the built-in
-     * rules can decide.
+     * Called to determine whether the player may carry {@code entity}.
      *
      * @param player the player attempting the carry
      * @param entity the entity being targeted
-     * @return {@code true} = allow, {@code false} = abstain
+     * @return {@code TRUE} to allow, {@code FALSE} to deny, {@code null} to abstain
      */
-    default boolean canCarryEntity(EntityPlayer player, Entity entity) {
-        return false;
+    default Boolean canCarryEntity(EntityPlayer player, Entity entity) {
+        return null;
     }
 }

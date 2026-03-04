@@ -57,33 +57,55 @@ public final class CarryOnPluginLoader {
     // ── Query helpers (called by PickupHandler) ───────────────────────────────
 
     /**
-     * Ask every registered plugin whether {@code block} at {@code meta} may be
-     * carried.  Returns {@code true} as soon as any plugin votes yes.
+     * Queries all registered plugins for their verdict on {@code block}.
+     * <ul>
+     *   <li>Any plugin returning {@code FALSE} → immediately returns {@code FALSE} (deny wins)</li>
+     *   <li>Any plugin returning {@code TRUE}  → returns {@code TRUE} once all denies are checked</li>
+     *   <li>All plugins abstain → returns {@code null}</li>
+     * </ul>
      */
-    public static boolean anyPluginAllowsBlock(EntityPlayer player, Block block, int meta) {
+    public static Boolean queryBlock(EntityPlayer player, Block block, int meta) {
+        boolean anyAllow = false;
         for (CarryOnPlugin plugin : PLUGINS) {
             try {
-                if (plugin.canCarryBlock(player, block, meta)) return true;
+                Boolean result = plugin.canCarryBlock(player, block, meta);
+                if (result == Boolean.FALSE) return Boolean.FALSE;
+                if (result == Boolean.TRUE)  anyAllow = true;
             } catch (Exception e) {
                 // don't let a broken plugin crash the game
             }
         }
-        return false;
+        return anyAllow ? Boolean.TRUE : null;
     }
 
     /**
-     * Ask every registered plugin whether {@code entity} may be carried.
-     * Returns {@code true} as soon as any plugin votes yes.
+     * Queries all registered plugins for their verdict on {@code entity}.
+     * Same three-valued semantics as {@link #queryBlock}.
      */
-    public static boolean anyPluginAllowsEntity(EntityPlayer player, Entity entity) {
+    public static Boolean queryEntity(EntityPlayer player, Entity entity) {
+        boolean anyAllow = false;
         for (CarryOnPlugin plugin : PLUGINS) {
             try {
-                if (plugin.canCarryEntity(player, entity)) return true;
+                Boolean result = plugin.canCarryEntity(player, entity);
+                if (result == Boolean.FALSE) return Boolean.FALSE;
+                if (result == Boolean.TRUE)  anyAllow = true;
             } catch (Exception e) {
                 // don't let a broken plugin crash the game
             }
         }
-        return false;
+        return anyAllow ? Boolean.TRUE : null;
+    }
+
+    /** @deprecated Use {@link #queryBlock} instead. */
+    @Deprecated
+    public static boolean anyPluginAllowsBlock(EntityPlayer player, Block block, int meta) {
+        return queryBlock(player, block, meta) == Boolean.TRUE;
+    }
+
+    /** @deprecated Use {@link #queryEntity} instead. */
+    @Deprecated
+    public static boolean anyPluginAllowsEntity(EntityPlayer player, Entity entity) {
+        return queryEntity(player, entity) == Boolean.TRUE;
     }
 
     // ── FML entrypoint scan (called once from CarryOn.onInitialize) ───────────
