@@ -34,8 +34,11 @@ public class PickupHandler {
         // 3. Plugin explicitly allows.
         if (pluginResult == Boolean.TRUE) return true;
 
-        // 4. Has a TileEntity → allow by default (whitelist core rule).
-        return tileEntity != null;
+        // 4. Block type provides a TileEntity → allow by default (whitelist core rule).
+        if (block.hasTileEntity()) return true;
+
+        // 5. Extra whitelist — blocks without a TileEntity that are still carryable.
+        return isWhitelistedBlocks(block);
     }
 
     public static boolean canPlayerPickUpEntity(EntityPlayer player, Entity entity) {
@@ -57,14 +60,35 @@ public class PickupHandler {
      */
     public static boolean isBlackListedBlocks(Block block)
     {
-        if (block instanceof BlockMobSpawner)      return true;
+        if (block instanceof BlockSign) return true;
 
-        if (block instanceof BlockEndPortal)       return true;
-        if (block instanceof BlockEndPortalFrame)  return true;
+        if (block instanceof BlockMobSpawner) return true;
 
-        if (block instanceof BlockStrongbox)       return true;
+        if (block instanceof BlockEndPortal) return true;
+        if (block instanceof BlockEndPortalFrame) return true;
 
-        if (block instanceof BlockCommandBlock)    return true;
+        if (block instanceof BlockStrongbox) return true;
+
+        if (block instanceof BlockCommandBlock) return true;
+
+        return false;
+    }
+
+    /**
+     * Extra whitelist — blocks without a TileEntity that should still be
+     * carryable (e.g. pistons, redstone lamps, dispensers, note blocks …).
+     * Plugins can also grant these via {@code Boolean.TRUE}.
+     */
+    public static boolean isWhitelistedBlocks(Block block)
+    {
+        String className = block.getClass().getSimpleName().toLowerCase();
+
+        if (block instanceof BlockWorkbench) return true;
+        if (className.contains("workbench")) return true;
+
+        if (block instanceof BlockPistonBase) return true;
+
+        if (block instanceof BlockRedstoneLight) return true;
 
         return false;
     }
