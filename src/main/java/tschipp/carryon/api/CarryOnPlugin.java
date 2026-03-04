@@ -9,27 +9,26 @@ import net.minecraft.EntityPlayer;
  * {@link CarryOnPluginLoader#register(CarryOnPlugin)} to tell CarryOn which
  * extra blocks / entities your mod wants to allow or explicitly deny.
  *
- * <h3>Three-valued semantics</h3>
+ * <h3>Return value semantics</h3>
  * <ul>
- *   <li>{@code Boolean.TRUE}  — explicitly allow (overrides the whitelist default)</li>
- *   <li>{@code Boolean.FALSE} — explicitly deny  (highest priority, overrides all allows)</li>
- *   <li>{@code null}          — abstain; let other plugins or built-in rules decide</li>
+ *   <li>{@code true}  — explicitly allow this block/entity</li>
+ *   <li>{@code false} — abstain; built-in rules (TileEntity whitelist, extra whitelist) still apply</li>
  * </ul>
- *
- * <p>The default implementations return {@code null} (abstain), so existing
- * plugins that only override one method are unaffected.</p>
+ * <p><strong>Important:</strong> returning {@code false} from {@link #canCarryBlock} does
+ * <em>not</em> prevent a block from being carried if it passes the built-in whitelist
+ * (e.g. it has a TileEntity).  To unconditionally deny a specific block, override
+ * {@link #denyCarryBlock} and return {@code true} there instead.</p>
  *
  * <h3>Usage</h3>
  * <pre>{@code
- * // in fabric.mod.json entrypoints:
- * //   "carryon": [ "com.example.MyCarryOnPlugin" ]
- *
- * public class MyCarryOnPlugin implements CarryOnPlugin {
+ * public class MyPlugin implements CarryOnPlugin {
  *     @Override
- *     public Boolean canCarryBlock(EntityPlayer player, Block block, int meta) {
- *         if (block instanceof MySpecialBlock) return Boolean.TRUE;   // allow
- *         if (block instanceof MyLockedBlock)  return Boolean.FALSE;  // deny
- *         return null; // abstain
+ *     public boolean canCarryBlock(EntityPlayer player, Block block, int meta) {
+ *         return block instanceof MyWorkbench; // true = allow, false = abstain
+ *     }
+ *     @Override
+ *     public boolean denyCarryBlock(EntityPlayer player, Block block, int meta) {
+ *         return block instanceof MyLockedBlock; // true = deny
  *     }
  * }
  * }</pre>
@@ -37,25 +36,34 @@ import net.minecraft.EntityPlayer;
 public interface CarryOnPlugin {
 
     /**
-     * Called to determine whether the player may carry {@code block}.
-     *
-     * @param player the player attempting the carry
-     * @param block  the block being targeted
-     * @param meta   block metadata at that position
-     * @return {@code TRUE} to allow, {@code FALSE} to deny, {@code null} to abstain
+     * Return {@code true} to explicitly allow carrying {@code block}.
+     * Return {@code false} to abstain (default).
      */
-    default Boolean canCarryBlock(EntityPlayer player, Block block, int meta) {
-        return null;
+    default boolean canCarryBlock(EntityPlayer player, Block block, int meta) {
+        return false;
     }
 
     /**
-     * Called to determine whether the player may carry {@code entity}.
-     *
-     * @param player the player attempting the carry
-     * @param entity the entity being targeted
-     * @return {@code TRUE} to allow, {@code FALSE} to deny, {@code null} to abstain
+     * Return {@code true} to explicitly <em>deny</em> carrying {@code block}.
+     * Deny takes priority over any allow vote. Return {@code false} to abstain (default).
      */
-    default Boolean canCarryEntity(EntityPlayer player, Entity entity) {
-        return null;
+    default boolean denyCarryBlock(EntityPlayer player, Block block, int meta) {
+        return false;
+    }
+
+    /**
+     * Return {@code true} to explicitly allow carrying {@code entity}.
+     * Return {@code false} to abstain (default).
+     */
+    default boolean canCarryEntity(EntityPlayer player, Entity entity) {
+        return false;
+    }
+
+    /**
+     * Return {@code true} to explicitly <em>deny</em> carrying {@code entity}.
+     * Deny takes priority over any allow vote. Return {@code false} to abstain (default).
+     */
+    default boolean denyCarryEntity(EntityPlayer player, Entity entity) {
+        return false;
     }
 }

@@ -59,18 +59,17 @@ public final class CarryOnPluginLoader {
     /**
      * Queries all registered plugins for their verdict on {@code block}.
      * <ul>
-     *   <li>Any plugin returning {@code FALSE} → immediately returns {@code FALSE} (deny wins)</li>
-     *   <li>Any plugin returning {@code TRUE}  → returns {@code TRUE} once all denies are checked</li>
-     *   <li>All plugins abstain → returns {@code null}</li>
+     *   <li>Any plugin's {@link CarryOnPlugin#denyCarryBlock} returns {@code true} → {@code FALSE} (deny wins)</li>
+     *   <li>Any plugin's {@link CarryOnPlugin#canCarryBlock} returns {@code true}  → {@code TRUE}</li>
+     *   <li>All plugins abstain → {@code null}</li>
      * </ul>
      */
     public static Boolean queryBlock(EntityPlayer player, Block block, int meta) {
         boolean anyAllow = false;
         for (CarryOnPlugin plugin : PLUGINS) {
             try {
-                Boolean result = plugin.canCarryBlock(player, block, meta);
-                if (result == Boolean.FALSE) return Boolean.FALSE;
-                if (result == Boolean.TRUE)  anyAllow = true;
+                if (plugin.denyCarryBlock(player, block, meta)) return Boolean.FALSE;
+                if (plugin.canCarryBlock(player, block, meta))  anyAllow = true;
             } catch (Exception e) {
                 // don't let a broken plugin crash the game
             }
@@ -80,15 +79,14 @@ public final class CarryOnPluginLoader {
 
     /**
      * Queries all registered plugins for their verdict on {@code entity}.
-     * Same three-valued semantics as {@link #queryBlock}.
+     * Same semantics as {@link #queryBlock}.
      */
     public static Boolean queryEntity(EntityPlayer player, Entity entity) {
         boolean anyAllow = false;
         for (CarryOnPlugin plugin : PLUGINS) {
             try {
-                Boolean result = plugin.canCarryEntity(player, entity);
-                if (result == Boolean.FALSE) return Boolean.FALSE;
-                if (result == Boolean.TRUE)  anyAllow = true;
+                if (plugin.denyCarryEntity(player, entity)) return Boolean.FALSE;
+                if (plugin.canCarryEntity(player, entity))  anyAllow = true;
             } catch (Exception e) {
                 // don't let a broken plugin crash the game
             }
