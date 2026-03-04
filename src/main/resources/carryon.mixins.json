@@ -7,6 +7,7 @@
   "client": [
     "client.ArmorRendererMixin",
     "client.BipedModelMixin",
+    "client.EntityPlayerPickupNormalBlockMixin",
     "client.FirstPersonMixin",
     "client.ItemIconOverrideMixin",
     "client.KeyboardMixin",

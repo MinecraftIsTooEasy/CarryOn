@@ -135,7 +135,8 @@ public class NetServerHandlerMixin {
                 int underX = MathHelper.floor_double(player.posX);
                 int underZ = MathHelper.floor_double(player.posZ);
                 Block underBlock = Block.blocksList[world.getBlockId(underX, footY - 1, underZ)];
-                if (underBlock != null && PickupHandler.isFunctionalBlock(underBlock)) return;
+
+                if (underBlock != null && PickupHandler.canPlayerPickUpBlock(player, world.getBlockTileEntity(underX, footY - 1, underZ), world, underX, footY - 1, underZ)) return;
             }
 
             if (ItemTile.isLocked(x, y, z, world)) return;

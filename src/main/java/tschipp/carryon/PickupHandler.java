@@ -29,21 +29,26 @@ public class PickupHandler {
     public static boolean isFunctionalBlock(Block block) {
 
         if (block instanceof BlockChest) return true;
-
         if (block instanceof BlockEnderChest) return true;
-
         if (block instanceof BlockStrongbox) return true;
-
         String className = block.getClass().getSimpleName().toLowerCase();
         if (className.contains("chest") || className.contains("locker")) return true;
 
         if (block instanceof BlockFurnace) return true;
 
         if (block instanceof BlockWorkbench) return true;
+        if (className.contains("workbench")) return true;
 
         if (block instanceof BlockAnvil) return true;
 
         if (block instanceof BlockHopper) return true;
+
+        if (block instanceof BlockNote) return true;
+        if (block instanceof BlockJukeBox) return true;
+
+        if (block instanceof BlockRedstoneLight) return true;
+
+        if (block instanceof BlockPistonBase) return true;
 
         if (block instanceof BlockDispenser) return true;
 
@@ -52,8 +57,6 @@ public class PickupHandler {
         if (block instanceof BlockBrewingStand) return true;
 
         if (block instanceof BlockBeacon) return true;
-
-        if (block instanceof BlockJukeBox) return true;
 
         return false;
     }
