@@ -118,7 +118,7 @@ public class NetServerHandlerMixin {
 
             int x = rc.block_hit_x, y = rc.block_hit_y, z = rc.block_hit_z;
 
-            if (block == null || !PickupHandler.isFunctionalBlock(block)) return;
+            if (block == null || !PickupHandler.canPlayerPickUpBlock(player, world.getBlockTileEntity(x, y, z), world, x, y, z)) return;
 
             if (block.getBlockHardness(world.getBlockMetadata(x, y, z)) < 0) return;
 

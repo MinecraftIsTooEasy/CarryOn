@@ -1,5 +1,7 @@
 package tschipp.carryon;
 
+import tschipp.carryon.api.CarryOnPluginLoader;
+
 import net.minecraft.*;
 
 /**
@@ -7,11 +9,12 @@ import net.minecraft.*;
  */
 public class PickupHandler {
 
-    public static boolean canPlayerPickUpBlock(EntityPlayer player, TileEntity te, World world, int x, int y, int z) {
+    public static boolean canPlayerPickUpBlock(EntityPlayer player, TileEntity tileEntity, World world, int x, int y, int z) {
         int blockId = world.getBlockId(x, y, z);
         Block block = Block.blocksList[blockId];
         if (block == null) return false;
-        return isFunctionalBlock(block);
+        int meta = world.getBlockMetadata(x, y, z);
+        return isFunctionalBlock(block) || CarryOnPluginLoader.anyPluginAllowsBlock(player, block, meta);
     }
 
     public static boolean canPlayerPickUpEntity(EntityPlayer player, Entity entity) {
@@ -19,7 +22,8 @@ public class PickupHandler {
         if (entity instanceof EntityAnimal) return true;
         // Allow carrying baby villagers only
         if (entity instanceof EntityVillager && ((EntityVillager) entity).isChild()) return true;
-        return false;
+
+        return CarryOnPluginLoader.anyPluginAllowsEntity(player, entity);
     }
 
     public static boolean isFunctionalBlock(Block block) {

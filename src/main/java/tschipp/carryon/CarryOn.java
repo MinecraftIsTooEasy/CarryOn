@@ -1,8 +1,11 @@
 package tschipp.carryon;
 
 import net.fabricmc.api.ModInitializer;
+
 import net.xiaoyu233.fml.ModResourceManager;
 import net.xiaoyu233.fml.reload.event.MITEEvents;
+
+import tschipp.carryon.api.CarryOnPluginLoader;
 import tschipp.carryon.compat.OffhandCompat;
 
 public class CarryOn implements ModInitializer {
@@ -16,5 +19,7 @@ public class CarryOn implements ModInitializer {
         MITEEvents.MITE_EVENT_BUS.register(new CarryOnEvents());
 
         OffhandCompat.register();
+
+        CarryOnPluginLoader.loadFromEntrypoints();
     }
 }
