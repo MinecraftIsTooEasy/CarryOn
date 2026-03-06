@@ -1,0 +1,39 @@
+Add a service descriptor file to your plugin JAR at:
+META-INF/services/tschipp.carryon.api.CarryOnPlugin (No file extension)
+The file should contain the fully-qualified implementation class name(s), one per line. Example:
+com.example.MyCarryOnPlugin
+
+Plugin example:
+
+package com.example;
+
+import tschipp.carryon.api.CarryOnPlugin;
+import net.minecraft.Block;
+import net.minecraft.Entity;
+import net.minecraft.EntityPlayer;
+
+public class MyCarryOnPlugin implements CarryOnPlugin {
+    public MyCarryOnPlugin() {
+        // public no-arg constructor
+    }
+
+    @Override
+    public boolean denyCarryBlock(EntityPlayer player, Block block, int meta) {
+        return false;
+    }
+
+    @Override
+    public boolean canCarryBlock(EntityPlayer player, Block block, int meta) {
+        return false;
+    }
+
+    @Override
+    public boolean denyCarryEntity(EntityPlayer player, Entity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean canCarryEntity(EntityPlayer player, Entity entity) {
+        return false;
+    }
+}
