@@ -61,7 +61,6 @@ public class PickupHandler {
     public static boolean isBlackListedBlocks(Block block)
     {
         String className = block.getClass().getSimpleName().toLowerCase();
-        if (className.contains("forgingtable") || className.contains("headstone")) return true;
         if (block instanceof BlockSign) return true;
 
         if (block instanceof BlockMobSpawner) return true;

@@ -109,15 +109,15 @@ public class NetServerHandlerMixin {
         if (!packet.requiresRaycasting()) return;
 
         // Temporarily apply packet position for server-side raycast
-        RaycastCollision rc = withPacketPos(player, packet, () -> player.getSelectedObject(((Packet81RightClickAccessor) packet).getPartial_tick(), false, false, null));
+        RaycastCollision raycastCollision = withPacketPos(player, packet, () -> player.getSelectedObject(((Packet81RightClickAccessor) packet).getPartial_tick(), false, false, null));
 
-        if (rc == null) return;
+        if (raycastCollision == null) return;
 
-        if (rc.isBlock()) {
+        if (raycastCollision.isBlock()) {
 
-            Block block = rc.getBlockHit();
+            Block block = raycastCollision.getBlockHit();
 
-            int x = rc.block_hit_x, y = rc.block_hit_y, z = rc.block_hit_z;
+            int x = raycastCollision.block_hit_x, y = raycastCollision.block_hit_y, z = raycastCollision.block_hit_z;
 
             if (block == null || !PickupHandler.canPlayerPickUpBlock(player, world.getBlockTileEntity(x, y, z), world, x, y, z)) return;
 
@@ -148,17 +148,23 @@ public class NetServerHandlerMixin {
 
             ItemStack stack = new ItemStack(CarryOnItems.TILE_ITEM);
 
-            if (ItemTile.storeTileData(world.getBlockTileEntity(x, y, z), world, x, y, z, stack))
+            TileEntity tileEntityToPickup = world.getBlockTileEntity(x, y, z);
+            if (ItemTile.storeTileData(tileEntityToPickup, world, x, y, z, stack))
             {
-                world.removeBlockTileEntity(x, y, z);
+                if (tileEntityToPickup instanceof IInventory) {
+                    IInventory iInventory = (IInventory) tileEntityToPickup;
+                    for (int i = 0; i < iInventory.getSizeInventory(); i++) {
+                        iInventory.setInventorySlotContents(i, null);
+                    }
+                }
                 world.setBlockToAir(x, y, z);
                 forceCarrySlot(player, carrySlot, stack);
                 ci.cancel();
             }
         }
-        else if (rc.isEntity())
+        else if (raycastCollision.isEntity())
         {
-            Entity entity = rc.getEntityHit();
+            Entity entity = raycastCollision.getEntityHit();
 
             if (entity == null || entity.isDead) return;
 
