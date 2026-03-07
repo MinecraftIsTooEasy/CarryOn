@@ -166,17 +166,17 @@ public class BlockRendererLayer {
         // Wrap the world so every brightness query returns full-bright,
         // defeating renderBlockBrewingStand's getMixedBrightnessForBlock call.
         IBlockAccess brightWorld = new BrightBlockAccess(world);
-        RenderBlocks rb = new RenderBlocks(brightWorld);
+        RenderBlocks renderBlocks = new RenderBlocks(brightWorld);
 
-        Tessellator t = Tessellator.instance;
-        t.startDrawingQuads();
-        t.setBrightness(0xF000F0);
-        t.setTranslation(-bx - 0.5, -by, -bz - 0.5);
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawingQuads();
+        tessellator.setBrightness(0xF000F0);
+        tessellator.setTranslation(-bx - 0.5, -by, -bz - 0.5);
 
-        rb.renderBlockByRenderType(block, bx, by, bz);
+        renderBlocks.renderBlockByRenderType(block, bx, by, bz);
 
-        t.draw();
-        t.setTranslation(0, 0, 0);
+        tessellator.draw();
+        tessellator.setTranslation(0, 0, 0);
 
         // Restore scratch position (almost certainly air already at y=255).
         world.setBlock(bx, by, bz, savedId, savedMeta, 0);
