@@ -155,6 +155,8 @@ public class NetServerHandlerMixin {
                     for (int i = 0; i < iInventory.getSizeInventory(); i++)
                         iInventory.setInventorySlotContents(i, null);
                 }
+                // Remove TE first so breakBlock handlers cannot read runtime state and duplicate it during carry pickup.
+                world.removeBlockTileEntity(x, y, z);
                 world.setBlockToAir(x, y, z);
                 forceCarrySlot(player, carrySlot, stack);
                 ci.cancel();
