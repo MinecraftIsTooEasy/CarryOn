@@ -82,7 +82,14 @@ public class InventoryPlayerMixin {
 
                     if (world.getBlockId(x, y, z) != 0) continue;
 
-                    world.setBlock(x, y, z, block.blockID, meta, 3);
+                    int placeMeta = meta;
+                    if (block instanceof BlockChest)
+                    {
+                        placeMeta = block.getMetadataForPlacement(world, x, y, z, stack, player, EnumFace.TOP, 0.5f, 0.5f, 0.5f);
+                        if (!block.canBePlacedAt(world, x, y, z, placeMeta)) continue;
+                    }
+
+                    world.setBlock(x, y, z, block.blockID, placeMeta, 3);
 
                     NBTTagCompound tileData = ItemTile.getTileData(stack);
 

@@ -65,28 +65,17 @@ public class ItemTile extends Item {
 
         if (playerBB.intersectsWith(placeBB)) return false;
 
-        // ── Hopper direction: shift+place connects the hopper output toward the clicked block ──
+        EnumFace placementFace = resolvePlacementFace(collision, x, y, z, placeX, placeY, placeZ);
         int finalMeta = containedMeta;
 
-        if (containedBlock instanceof BlockHopper && player.isSneaking())
+        if (containedBlock instanceof BlockChest)
         {
-            // Derive the EnumFace of the clicked block's face that was hit.
-            // (place - hit) gives the direction from hit block toward place position,
-            // which is the outward-facing normal of the clicked face.
-            int fdx = placeX - x;
-            int fdy = placeY - y;
-            int fdz = placeZ - z;
-
-            EnumFace clickedFace;
-            if      (fdy ==  1) clickedFace = EnumFace.TOP;
-            else if (fdy == -1) clickedFace = EnumFace.BOTTOM;
-            else if (fdz ==  1) clickedFace = EnumFace.SOUTH;
-            else if (fdz == -1) clickedFace = EnumFace.NORTH;
-            else if (fdx ==  1) clickedFace = EnumFace.EAST;
-            else                clickedFace = EnumFace.WEST;
-
-            // Delegate entirely to BlockHopper's own placement logic.
-            finalMeta = containedBlock.getMetadataForPlacement(world, placeX, placeY, placeZ, null, player, clickedFace, 0.5f, 0.5f, 0.5f);
+            finalMeta = containedBlock.getMetadataForPlacement(world, placeX, placeY, placeZ, stack, player, placementFace, 0.5f, 0.5f, 0.5f);
+            if (!containedBlock.canBePlacedAt(world, placeX, placeY, placeZ, finalMeta)) return false;
+        }
+        else if (containedBlock instanceof BlockHopper && player.isSneaking())
+        {
+            finalMeta = containedBlock.getMetadataForPlacement(world, placeX, placeY, placeZ, stack, player, placementFace, 0.5f, 0.5f, 0.5f);
         }
 
         world.setBlock(placeX, placeY, placeZ, containedBlock.blockID, finalMeta, 3);
@@ -223,6 +212,24 @@ public class ItemTile extends Item {
         te.writeToNBT(tag);
 
         return tag.hasKey("Lock") && !tag.getString("Lock").isEmpty();
+    }
+
+    private static EnumFace resolvePlacementFace(RaycastCollision collision, int hitX, int hitY, int hitZ, int placeX, int placeY, int placeZ)
+    {
+        int fdx = placeX - hitX;
+        int fdy = placeY - hitY;
+        int fdz = placeZ - hitZ;
+
+        if (fdy == 1)  return EnumFace.TOP;
+        if (fdy == -1) return EnumFace.BOTTOM;
+        if (fdz == 1)  return EnumFace.SOUTH;
+        if (fdz == -1) return EnumFace.NORTH;
+        if (fdx == 1)  return EnumFace.EAST;
+        if (fdx == -1) return EnumFace.WEST;
+
+        if (collision != null && collision.face_hit != null) return collision.face_hit;
+
+        return EnumFace.TOP;
     }
 
     private int potionLevel(ItemStack stack)
