@@ -15,10 +15,10 @@ public class CarryOnEvents {
 
     @Subscribe
     public void onItemRegister(ItemRegistryEvent event) {
-        TILE_ITEM = new ItemTile(3488);
+        TILE_ITEM = new ItemTile(23488);
         event.register(NAMESPACE, NAMESPACE + ":carryon_tile", "carryon.tile_item", TILE_ITEM);
 
-        ENTITY_ITEM = new ItemEntity(3489);
+        ENTITY_ITEM = new ItemEntity(23489);
         event.register(NAMESPACE, NAMESPACE + ":carryon_entity", "carryon.entity_item", ENTITY_ITEM);
     }
 
