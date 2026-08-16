@@ -58,7 +58,7 @@ dependencies {
 
     implementation "com.github.MinecraftIsTooEasy:MITE-ITF-Reborn:17.2.25"
 
-    compileOnly "com.github.MinecraftIsTooEasy:OffHand:3.0.2"
+    compileOnly "org.moddedmite:offhand:3.1.0"
 }
 
 def fmlResolvedFile = configurations.fml.singleFile

@@ -5,8 +5,6 @@ import net.minecraft.ItemStack;
 
 public final class CarryOnHelper {
 
-    private CarryOnHelper() {}
-
     /**
      * Returns true if the player is currently holding a CarryOn carry item
      * (either a carried block or a carried entity).

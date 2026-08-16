@@ -5,6 +5,9 @@
   "depends": {
     "fishmodloader": ">=3.0.0"
   },
+  "breaks": {
+    "offhand": "<3.1.0"
+  },
   "environment": "*",
   "name": "${name}",
   "icon": "assets/carryon/icon.png",

@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import tschipp.carryon.CarryOnEvents;
 import tschipp.carryon.client.render.ICarrying;
 
 @Mixin(ModelBiped.class)
@@ -42,6 +43,12 @@ public class BipedModelMixin implements ICarrying {
     @Inject(method = "setRotationAngles", at = @At("RETURN"))
     public void onSetAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entity, CallbackInfo info)
     {
+        // ModelBiped instances are reused between players. Refresh these flags
+        // here so this pose always belongs to the entity being rendered now.
+        ItemStack stack = entity instanceof EntityPlayer player ? player.getHeldItemStack() : null;
+        isCarryingBlock = stack != null && stack.getItem() == CarryOnEvents.TILE_ITEM;
+        isCarryingEntity = stack != null && stack.getItem() == CarryOnEvents.ENTITY_ITEM;
+
         if (isCarryingBlock)
         {
             float x = -1F + (isSneak ? 0f : 0.2f);

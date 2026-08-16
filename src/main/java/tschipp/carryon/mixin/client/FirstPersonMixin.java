@@ -32,5 +32,4 @@ public class FirstPersonMixin {
             EntityRendererLayer.renderFirstPerson(mc.thePlayer, stack, partialTicks);
         }
     }
-
 }

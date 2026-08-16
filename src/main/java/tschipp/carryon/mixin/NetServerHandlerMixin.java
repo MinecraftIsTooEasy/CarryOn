@@ -107,8 +107,8 @@ public class NetServerHandlerMixin {
 
         if (!packet.requiresRaycasting()) return;
 
-        // Temporarily apply packet position for server-side raycast
-        RaycastCollision raycastCollision = withPacketPos(player, packet, () -> player.getSelectedObject(packet.partial_tick, false, false, null));
+        // Temporarily apply packet state for server-side raycast
+        RaycastCollision raycastCollision = raycastWithPacketState(player, packet, () -> player.getSelectedObject(packet.partial_tick, false, false, null));
 
         if (raycastCollision == null) return;
 
@@ -211,33 +211,42 @@ public class NetServerHandlerMixin {
         return true;
     }
 
-    /** Temporarily applies packet position/rotation to the player for a server-side raycast. */
+    /** Temporarily applies packet state to the player for a server-side raycast. */
     @Unique
-    private static RaycastCollision withPacketPos(ServerPlayer player, Packet81RightClick pkt, Supplier<RaycastCollision> fn)
+    private static RaycastCollision raycastWithPacketState(ServerPlayer player, Packet81RightClick packet, Supplier<RaycastCollision> raycastSupplier)
     {
-        double ox = player.posX, oy = player.posY, oz = player.posZ;
-        float oyaw = player.rotationYaw, opitch = player.rotationPitch;
-        double opx = player.prevPosX, opy = player.prevPosY, opz = player.prevPosZ;
-        float opyaw = player.prevRotationYaw, oppitch = player.prevRotationPitch;
-        float oySize = player.ySize;
-        AxisAlignedBB obb = player.boundingBox.copy();
+        double originalPosX = player.posX;
+        double originalPosY = player.posY;
+        double originalPosZ = player.posZ;
+        float originalYaw = player.rotationYaw;
+        float originalPitch = player.rotationPitch;
+        double originalPrevPosX = player.prevPosX;
+        double originalPrevPosY = player.prevPosY;
+        double originalPrevPosZ = player.prevPosZ;
+        float originalPrevYaw = player.prevRotationYaw;
+        float originalPrevPitch = player.prevRotationPitch;
+        float originalYSize = player.ySize;
+        AxisAlignedBB originalBoundingBox = player.boundingBox.copy();
 
-        player.posX = pkt.pos_x; player.posY = pkt.pos_y; player.posZ = pkt.pos_z;
-        player.rotationYaw = pkt.rotation_yaw; player.rotationPitch = pkt.rotation_pitch;
-        player.prevPosX = pkt.prev_pos_x; player.prevPosY = pkt.prev_pos_y; player.prevPosZ = pkt.prev_pos_z;
-        player.prevRotationYaw = pkt.prev_rotation_yaw; player.prevRotationPitch = pkt.prev_rotation_pitch;
-        player.ySize = pkt.y_size;
-        player.boundingBox.setBB(pkt.bb);
+        try
+        {
+            player.posX = packet.pos_x; player.posY = packet.pos_y; player.posZ = packet.pos_z;
+            player.rotationYaw = packet.rotation_yaw; player.rotationPitch = packet.rotation_pitch;
+            player.prevPosX = packet.prev_pos_x; player.prevPosY = packet.prev_pos_y; player.prevPosZ = packet.prev_pos_z;
+            player.prevRotationYaw = packet.prev_rotation_yaw; player.prevRotationPitch = packet.prev_rotation_pitch;
+            player.ySize = packet.y_size;
+            player.boundingBox.setBB(packet.bb);
 
-        RaycastCollision rc = fn.get();
-
-        player.posX = ox; player.posY = oy; player.posZ = oz;
-        player.rotationYaw = oyaw; player.rotationPitch = opitch;
-        player.prevPosX = opx; player.prevPosY = opy; player.prevPosZ = opz;
-        player.prevRotationYaw = opyaw; player.prevRotationPitch = oppitch;
-        player.ySize = oySize;
-        player.boundingBox.setBB(obb);
-
-        return rc;
+            return raycastSupplier.get();
+        }
+        finally
+        {
+            player.posX = originalPosX; player.posY = originalPosY; player.posZ = originalPosZ;
+            player.rotationYaw = originalYaw; player.rotationPitch = originalPitch;
+            player.prevPosX = originalPrevPosX; player.prevPosY = originalPrevPosY; player.prevPosZ = originalPrevPosZ;
+            player.prevRotationYaw = originalPrevYaw; player.prevRotationPitch = originalPrevPitch;
+            player.ySize = originalYSize;
+            player.boundingBox.setBB(originalBoundingBox);
+        }
     }
 }

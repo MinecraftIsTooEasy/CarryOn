@@ -1,7 +1,7 @@
 package tschipp.carryon.compat;
 
-import com.m.offhand.api.compat.IOffhandActionFilter;
-import com.m.offhand.api.compat.OffhandCompatRegistry;
+import moddedmite.offhand.api.compat.IOffhandActionFilter;
+import moddedmite.offhand.api.compat.OffhandCompatRegistry;
 
 import net.minecraft.EntityPlayer;
 import net.minecraft.ItemStack;
