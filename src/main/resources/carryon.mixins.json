@@ -11,6 +11,7 @@
     "client.FirstPersonMixin",
     "client.ItemIconOverrideMixin",
     "client.KeyboardMixin",
+    "client.MinecraftMixin",
     "client.PlayerControllerMixin",
     "client.PlayerRendererMixin"
   ],

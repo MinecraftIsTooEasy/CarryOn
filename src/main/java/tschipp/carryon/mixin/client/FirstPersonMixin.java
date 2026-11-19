@@ -1,6 +1,8 @@
 package tschipp.carryon.mixin.client;
 
-import net.minecraft.*;
+import net.minecraft.ItemRenderer;
+import net.minecraft.ItemStack;
+import net.minecraft.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,22 +15,20 @@ import tschipp.carryon.client.render.EntityRendererLayer;
 public class FirstPersonMixin {
 
     @Inject(method = "renderItemInFirstPerson", at = @At("HEAD"), cancellable = true)
-    public void onRenderItem(float partialTicks, CallbackInfo info)
-    {
+    private void onRenderItem(float partialTicks, CallbackInfo info) {
         Minecraft mc = Minecraft.getMinecraft();
-        if (mc == null || mc.thePlayer == null) return;
+        if (mc.thePlayer == null) return;
 
         ItemStack stack = mc.thePlayer.getHeldItemStack();
         if (stack == null) return;
 
-        if (stack.getItem() == CarryOnEvents.TILE_ITEM)
-        {
-            info.cancel();
+        boolean carryingBlock = stack.getItem() == CarryOnEvents.TILE_ITEM;
+        if (!carryingBlock && stack.getItem() != CarryOnEvents.ENTITY_ITEM) return;
+
+        info.cancel();
+        if (carryingBlock) {
             BlockRendererLayer.renderFirstPerson(mc.thePlayer, stack, partialTicks);
-        }
-        else if (stack.getItem() == CarryOnEvents.ENTITY_ITEM)
-        {
-            info.cancel();
+        } else {
             EntityRendererLayer.renderFirstPerson(mc.thePlayer, stack, partialTicks);
         }
     }

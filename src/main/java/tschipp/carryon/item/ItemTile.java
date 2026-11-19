@@ -77,6 +77,14 @@ public class ItemTile extends Item {
         {
             finalMeta = containedBlock.getMetadataForPlacement(world, placeX, placeY, placeZ, stack, player, placementFace, 0.5f, 0.5f, 0.5f);
         }
+        else if (!(containedBlock instanceof BlockHopper) && containedBlock.getDirectionFacing(containedMeta) != null)
+        {
+            int placementMeta = containedBlock.getMetadataForPlacement(world, placeX, placeY, placeZ, stack, player, placementFace, 0.5f, 0.5f, 0.5f);
+            if (placementMeta < 0) return false;
+            EnumDirection direction = containedBlock.getDirectionFacing(placementMeta);
+            if (direction != null) finalMeta = containedBlock.getMetadataForDirectionFacing(containedMeta, direction);
+            if (!containedBlock.canBePlacedAt(world, placeX, placeY, placeZ, finalMeta)) return false;
+        }
 
         world.setBlock(placeX, placeY, placeZ, containedBlock.blockID, finalMeta, 3);
 
